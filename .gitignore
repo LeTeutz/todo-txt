@@ -1,0 +1,27 @@
+node_modules/
+ui/node_modules/
+# Also the bare entry: `scripts/run-e2e.mjs` creates a repo-root SYMLINK named
+# `node_modules` -> `ui/node_modules` so specs under tests/ can resolve
+# @playwright/test. A trailing-slash pattern matches directories only, which
+# would not match that symlink.
+/node_modules
+# ui/dist/ is deliberately NOT ignored: `app.json -> ui.entry` points at
+# ui/dist/index.mjs, and a registry install must not require the user to have
+# a working Node toolchain. Rebuild with `cd ui && npm install && npm run build`.
+__pycache__/
+.app_secret
+data/
+installed.json
+test-results/
+playwright-report/
+.playwright/
+# vitest run-state cache.
+.vite/
+ui/dist-harness/
+
+# pytest
+.pytest_cache/
+
+# Local backend dev/test interpreter (pytest + aiohttp). The pytest suite runs
+# through .venv-appdev/bin/python.
+.venv-appdev/

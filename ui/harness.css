@@ -1,0 +1,22 @@
+/* Height constraint for the e2e harness.
+ *
+ * The dashboard mounts this app inside a panel with a DEFINITE height, so the
+ * app's `h-full` page root has something to resolve against and the editor is
+ * bounded (its `.cm-scroller` scrolls internally). Without height styling
+ * here, `#root` is auto-height and the whole chain grows to the document's
+ * full height, so the PAGE scrolls instead of the editor.
+ *
+ * That difference makes a class of behaviour untestable: vim's Ctrl+D /
+ * Ctrl+U scroll the EDITOR's scroller, so with an unbounded editor they are
+ * no-ops in the harness and an e2e test cannot tell that apart from a real
+ * defect. Constraining the height once here — rather than per test with
+ * addStyleTag — keeps the harness faithful to the real mount.
+ */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  min-height: 0;
+  overflow: hidden;
+}

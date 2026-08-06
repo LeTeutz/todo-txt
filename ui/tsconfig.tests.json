@@ -1,0 +1,38 @@
+// Type-checks the TEST suite, which the main tsconfig deliberately does not.
+//
+// WHY THIS EXISTS
+// `tsconfig.json` has `include: ["src"]` AND
+// `exclude: ["**/*.test.ts", "**/*.test.tsx"]`, so `npx tsc --noEmit` covers
+// neither the repo-root `tests/` directory nor any test file anywhere. That is
+// the right scope for a production typecheck, but it leaves the tests
+// unchecked, and vitest transpiles without type information — so a test can
+// hold a wrong object literal or a stale prop set and still go green.
+//
+// This config closes that gap, and `npm run build` runs it alongside the
+// source typecheck so a test file cannot drift from the component it exercises.
+// A missing required prop is the common case: a component that only invokes a
+// prop on interaction passes at runtime while the type contract is already
+// broken.
+//
+// Conventions this enforces in tests:
+//   * `vi.fn<(a: A) => R>()` — the function-signature generic form, not the
+//     pre-vitest-1 `vi.fn<[Args], Ret>()`.
+//   * @types/node is available, so fixture-reading tests may use node:fs,
+//     node:path and __dirname.
+//   * Mocks are typed with the real signature of what they replace (for
+//     example navigator.sendBeacon) rather than cast into place.
+//
+// Run standalone with: npm run typecheck:tests
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // @types/node is a devDependency: several tests read fixtures with
+    // node:fs / node:path and use __dirname or process.env.
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src", "../tests"],
+  // Everything under tests/ is checked, e2e specs included — they are the
+  // files most likely to drift, since vitest never even loads them.
+  "exclude": []
+}

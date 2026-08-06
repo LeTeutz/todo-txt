@@ -1,0 +1,166 @@
+/*
+ * Tailwind entry for the todo-txt app bundle.
+ *
+ * Previously this app relied on the dashboard chrome's globally-injected
+ * Tailwind CSS. That made the editor body unstyled if the host
+ * ever scoped or purged its Tailwind build. We now emit a self-contained
+ * JIT bundle here and inject it at module load time via
+ * vite-plugin-css-injected-by-js. Preflight is disabled (see
+ * tailwind.config.js) so host typography is preserved.
+ *
+ * @layer base usage below is deliberate: preflight being off means
+ * browser user-agent styles for form elements leak in,
+ * AND we need a place to declare theme-token defaults that win against
+ * utility-class order without fighting preflight. @layer base slots in
+ * below Tailwind's own base (if it ever ships) and above utilities, so
+ * our form-element and theme-token rules are overridable by explicit
+ * utilities but not by UA defaults.
+ *
+ * `@tailwind base;` is required below for the `@layer base { ... }`
+ * directive to register, even though preflight is disabled in
+ * tailwind.config.js — disabling preflight drops Tailwind's reset
+ * rules but keeps the base layer infrastructure available.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ---------------------------------------------------------------
+   * Form-element theme inheritance (preflight escape).
+   *
+   * With preflight disabled, textarea/input inherit the browser's
+   * default light-grey-on-white palette instead of the dashboard's
+   * theme tokens, so the editor body goes near-unreadable on dark
+   * themes. Explicitly pin the tokens here; bg is kept transparent
+   * so the parent's `bg-[var(--color-bg)]` still paints through.
+   * ---------------------------------------------------------------
+   */
+  textarea,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"] {
+    color: var(--color-fg);
+    background-color: transparent;
+    caret-color: var(--color-fg);
+  }
+
+  /* Button preflight escape. UA buttons carry
+   * a default light-grey `button` bg that leaks through our themed
+   * header/toolbar when preflight is disabled. Pin transparent bg +
+   * inherited color so themed parents paint through without a reset.
+   *
+   * Font joined the escape (store-screenshot round, 2026-08-05): UA
+   * buttons do not inherit fonts, so every action button rendered in
+   * whatever the host body font was instead of the app's mono baseline
+   * ("the selected font is not in the actions"). Scoped to the app root:
+   * this stylesheet is injected page-globally by
+   * vite-plugin-css-injected-by-js, and unscoped element rules would
+   * fight the dashboard's own preflight outside the app (the "blue
+   * dashboard" incident class).
+   */
+  [data-testid='todo-txt-page'] button {
+    background-color: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+
+  /* Preflight's border reset, scoped to the app subtree for the same
+   * reason: with preflight off, bare `border`/`border-b` width utilities
+   * rely on the HOST's global `border-style: solid` to become visible,
+   * and UA widgets keep their native borders (the white boxes around
+   * every header chip whenever the host reset is absent). Identical to
+   * what the dashboard already applies globally, so in-dashboard
+   * rendering is unchanged; standalone hosting stops depending on it.
+   * Lives in @layer base, so explicit utilities still win.
+   */
+  [data-testid='todo-txt-page'],
+  [data-testid='todo-txt-page'] *,
+  [data-testid='todo-txt-page'] ::before,
+  [data-testid='todo-txt-page'] ::after {
+    border-width: 0;
+    border-style: solid;
+    border-color: currentColor;
+  }
+
+  /* ---------------------------------------------------------------
+   * App-local token bridge -> canonical host tokens.
+   *
+   * The dashboard host (verified live at /static/css/dashboard.css)
+   * owns the canonical palette - `--bg --bg-elevated --bg-hover
+   * --bg-accent --text --muted --muted-strong --border --border-strong
+   * --accent --accent-subtle --ok --warn --danger --mono` etc - and
+   * re-derives every one of them per theme (light / dark + the 6 CRT
+   * themes). Earlier code referenced an app-local `--color-*` family
+   * plus a few off-canonical names (`--text-muted --muted-fg --success
+   * --warning --font-mono`) that the host NEVER defines, so each
+   * `var()` fell through to a hardcoded dark hex and clashed on light
+   * and the CRT themes.
+   *
+   * Aliasing them to the canonical tokens here makes the whole app
+   * theme-aware in one place. The hex fallbacks only fire if a host
+   * token is somehow missing, and they match the host's dark-theme
+   * palette so dark rendering stays pixel-identical.
+   * ---------------------------------------------------------------
+   */
+  :root {
+    --color-bg: var(--bg, #12141a);
+    --color-bg-elevated: var(--bg-elevated, #1a1d25);
+    --color-bg-hover: var(--bg-hover, #262a35);
+    --color-bg-subtle: var(--bg-accent, #14161d);
+    --color-fg: var(--text, #e4e4e7);
+    --color-muted-fg: var(--muted, #71717a);
+    --color-border: var(--border, #27272a);
+    --color-danger: var(--danger, #ef4444);
+    --color-error: var(--danger, #ef4444);
+
+    --text-muted: var(--muted, #71717a);
+    --muted-fg: var(--muted, #71717a);
+    --muted-aa: var(--muted-strong, #a1a1aa);
+    --success: var(--ok, #22c55e);
+    --warning: var(--warn, #f59e0b);
+    --accent-bg: var(--accent-subtle, rgba(245, 158, 50, 0.15));
+
+    /* Host defines no `--accent-fg`. The accent is amber in every theme,
+     * so a near-black ink clears AA on all of them (black on dark
+     * #f59e32 ~10.8:1, on light #d97706 ~6:1; white-on-amber fails). */
+    --accent-fg: #18181b;
+
+    --font-mono: var(
+      --mono,
+      'JetBrains Mono',
+      ui-monospace,
+      SFMono-Regular,
+      monospace
+    );
+
+    /* Save-status chip -> canonical status tokens. These already pick an
+     * AA-safe shade per theme, so the old per-theme hex overrides (and
+     * their open TODO) are no longer needed. */
+    --color-status-ok: var(--ok, #22c55e);
+    --color-status-warn: var(--warn, #f59e0b);
+    --color-status-err: var(--danger, #ef4444);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * AMOLED true-black background (opt-in, dark themes only).
+ *
+ * Scoped to the app root `[data-amoled="true"]` (set by TodoTxtPage only
+ * when the toggle is on AND a dark theme is active). It overrides just the
+ * app's own --color-* tokens for its subtree and NEVER touches the
+ * dashboard's global :root palette (the "blue dashboard" incident guard).
+ * Unlayered so it wins over the @layer base token defaults above.
+ * ------------------------------------------------------------------------- */
+[data-amoled="true"] {
+  --color-bg: #000000;
+  --color-bg-elevated: #0a0a0b;
+  --color-bg-hover: #17171c;
+  --color-bg-subtle: #050506;
+  --color-border: #1c1c22;
+}

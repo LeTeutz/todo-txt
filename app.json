@@ -1,0 +1,92 @@
+{
+  "name": "todo-txt",
+  "version": "1.0.0",
+  "displayName": "todo.txt",
+  "description": "Edits a todo.txt file: one task per line, no database. Point it at a folder you already sync, or use the one it creates. Priorities, projects, contexts and due dates colour as you type, and the format's semantics actually run rather than just highlight: rec: rollover on completion, t: thresholds, h:1 hidden tasks. Palette verbs match the todo.txt CLI. Archiving moves completed tasks to done.txt. AI rewrites the lines you select, and stages any deletion as a diff you approve.",
+  "author": "LeTeutz",
+  "license": "Apache-2.0",
+  "tags": [
+    "todo",
+    "todo.txt",
+    "plaintext",
+    "editor",
+    "vim",
+    "productivity"
+  ],
+  "highlights": [
+    "Reads and writes a todo.txt in any folder, including one your sync tool already watches. The path is stored in the app's settings.json.",
+    "Saves 400ms after you stop typing, or straight away once four seconds of unbroken typing have passed.",
+    "If the file changed on disk, the save is refused and your text stays in the editor. Nothing is merged and nothing is discarded.",
+    "A 5-second poll watches for edits made elsewhere. It reloads a buffer with no unsaved work, and asks first when you have some.",
+    "An interrupted session reopens as a recovery draft you accept or discard.",
+    "Multi-cursor, coloured priorities, Tab-completion for +projects and @contexts, and an optional VIM mode with todo.txt leader keys.",
+    "Palette verbs match the todo.txt CLI: add, do, pri, depri, sort, deduplicate, archive, move, listproj, report.",
+    "filter @work pri:A-C due:<=7d dims the non-matching lines. The file is untouched. An option hides t: and h:1 tasks.",
+    "rec:1w schedules from the day you complete a task; rec:+1w schedules from its due: date. Monthly and yearly steps clamp to real month ends.",
+    "An additive AI rewrite applies after a snapshot. One that deletes a line is staged as a diff until you approve it.",
+    "done.txt is a tab of its own with rotating backups. report.txt is append-only, drawn as a 90-day active-versus-done chart."
+  ],
+  "iconUrl": "/apps/todo-txt/ui/brand/icon-512.png",
+  "iconPath": "ui/brand/icon-512.png",
+  "ui": {
+    "entry": "dist/index.mjs",
+    "pages": [
+      {
+        "route": "/apps/todo-txt",
+        "label": "todo.txt",
+        "icon": "NotebookPen",
+        "iconUrl": "brand/icon.svg",
+        "entryPoint": "dist/index.mjs",
+        "mountFunction": "mount"
+      }
+    ],
+    "sidebar": {
+      "section": "Apps",
+      "order": 17
+    }
+  },
+  "backend": {
+    "entryPoint": "backend/server.py",
+    "type": "python",
+    "port": "auto",
+    "healthCheck": "/health",
+    "routes": "/apps/todo-txt/api"
+  },
+  "agents": [
+    "agents/ai-edit.json"
+  ],
+  "permissions": {
+    "mcpTools": [],
+    "storage": true,
+    "network": false,
+    "cron": false,
+    "spawn": true,
+    "memory": "app-scoped",
+    "api": [
+      "/apps/todo-txt/api",
+      "/api/spawn"
+    ],
+    "events": [
+      "notification"
+    ]
+  },
+  "platform": {
+    "os": [
+      "linux",
+      "macos"
+    ],
+    "installMode": "server"
+  },
+  "lifecycle": "gateway",
+  "resources": "gateway",
+  "heroImage": "ui/brand/hero-card-light.svg",
+  "heroImageDark": "ui/brand/hero-card-dark.svg",
+  "heroImageDetail": "ui/brand/hero-detail-light.svg",
+  "heroImageDetailDark": "ui/brand/hero-detail-dark.svg",
+  "screenshots": [
+    "ui/brand/screenshots/editor.png",
+    "ui/brand/screenshots/palette.png",
+    "ui/brand/screenshots/popover.png"
+  ],
+  "minKiroCrewVersion": "0.1.2"
+}

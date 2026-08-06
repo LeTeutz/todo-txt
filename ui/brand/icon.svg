@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="256" height="256"
+     fill="none" stroke-linecap="round" stroke-linejoin="round"
+     role="img" aria-label="todo.txt">
+  <!--
+    [x] — the plain-text checkbox. A todo.txt file marks a task done by writing
+    an ASCII character at the start of the line, so the mark IS the format.
+
+    READ THIS BEFORE CHANGING THE COLOURS.
+
+    A sideloaded app's icon is rendered by the dashboard as a plain img tag:
+
+        <img src="/apps/todo-txt/ui/brand/icon.svg">
+
+    It is NOT inlined, so it CANNOT see the page's custom properties. The
+    dashboard does have an inline path that drives ico-a / ico-b, but it is
+    gated on the icon URL matching this regex:
+
+        ^/app-assets/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+\.svg$
+
+    Only BUILTIN apps get URLs of that shape. A sideloaded or registry-installed
+    app is served from /apps/NAME/ui/..., which can never match it — three ways
+    at once: wrong prefix, one path segment too many, and a slash inside the
+    final segment. So the tone properties are structurally unreachable here.
+
+    That is why the strokes below end in LITERAL hex colours. An svg inside an
+    img resolves currentColor against its own document, where color is initial
+    (black) — so a currentColor fallback painted this icon black on a black rail
+    and it was invisible. Four redesigns were spent on the artwork before the
+    cause turned out to be the delivery path, not the drawing.
+
+    The var() chain is kept in front of the literals on purpose: it costs
+    nothing, and if the icon is ever inlined (a future dashboard, or this app
+    shipping as a builtin) it themes itself instead of staying baked. The
+    literals are the fallback, not the plan.
+
+    The colours must read on a near-black rail AND a white one, because a baked
+    icon cannot follow the theme: mid-grey brackets and a mid-green x clear both.
+
+    NOTE for future edits: an XML comment may not contain a double hyphen, so
+    the property names above are written without their leading dashes. Writing
+    them literally makes this file fail to parse, and a malformed icon renders
+    as a broken-image placeholder rather than erroring loudly.
+
+    ON THE INTRINSIC SIZE: the geometry stays on a 24 grid (the stroke widths
+    are tuned for a rail that renders this at 16 to 34 px), but the width and
+    height attributes declare 256 because a store icon is required to be square
+    and at least 256 across. Every surface that renders the icon sizes it in
+    CSS, so the declared size is the intended minimum rather than the display
+    size, and nothing is rasterized at any point: the same file is crisp at 16
+    and at 1024.
+  -->
+  <path d="M8.4 4.4 H4.6 V19.6 H8.4"
+        stroke="var(--ico-a, var(--muted, #7f7f88))" stroke-width="2.1"/>
+  <path d="M15.6 4.4 H19.4 V19.6 H15.6"
+        stroke="var(--ico-a, var(--muted, #7f7f88))" stroke-width="2.1"/>
+  <path d="M9.9 9.6 L14.1 14.4 M14.1 9.6 L9.9 14.4"
+        stroke="var(--ico-b, var(--accent, #00c98d))" stroke-width="2.4"/>
+</svg>

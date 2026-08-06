@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="300" viewBox="0 0 1250 300"
+     role="img" aria-label="todo.txt — a slice of a plain-text todo file with one line mid AI edit">
+  <title>todo.txt — plain-text todos with staged, reviewable AI edits</title>
+  <defs>
+    <radialGradient id="halo" cx="32%" cy="50%" r="52%">
+      <stop offset="0%" stop-color="#047558" stop-opacity="0.09"/>
+      <stop offset="100%" stop-color="#047558" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-60%" y="-200%" width="220%" height="500%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1250" height="300" fill="#ffffff"/>
+  <rect x="0" y="0" width="1250" height="300" fill="url(#halo)"/>
+
+  <!-- focal row: the line being edited -->
+  <rect x="62" y="130" width="746" height="36" rx="10" fill="#047558" opacity="0.10" filter="url(#soft)"/>
+  <rect x="62" y="130" width="746" height="36" rx="10" fill="#047558" fill-opacity="0.07"/>
+  <rect x="62" y="130" width="3" height="36" rx="1.5" fill="#047558"/>
+
+  <!-- gutter rule -->
+  <line x1="62" y1="40" x2="62" y2="262" stroke="#d0d7de" stroke-width="1.5"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" xml:space="preserve">
+
+    <!-- line numbers -->
+    <g font-size="13" fill="#656d76" opacity="0.6" text-anchor="end">
+      <text x="46" y="66">1</text>
+      <text x="46" y="108">2</text>
+      <text x="46" y="150">3</text>
+      <text x="46" y="192">4</text>
+      <text x="46" y="234">5</text>
+    </g>
+
+    <!-- task lines -->
+    <g font-size="19">
+      <text x="72" y="66" fill="#656d76" opacity="0.75">x 2026-08-03 Wire filter chips +ui @app</text>
+
+      <text x="72" y="108" fill="#1f2328"><tspan fill="#cf222e">(A) </tspan>Fix due: legibility <tspan fill="#0969da">+ui </tspan><tspan fill="#1b7c83">@polish </tspan><tspan fill="#9a6700">due:2026-08-06</tspan></text>
+
+      <text x="72" y="150" fill="#1f2328"><tspan fill="#cf222e">(A) </tspan>Write hero art <tspan fill="#0969da">+brand </tspan><tspan fill="#9a6700">due:2026-08-12</tspan></text>
+
+      <text x="72" y="192" fill="#1f2328"><tspan fill="#656d76">(C) </tspan>Weekly review of done.txt <tspan fill="#0969da">+habit </tspan><tspan fill="#8250df">rec:1w</tspan></text>
+
+      <text x="72" y="234" fill="#1f2328">Draft release notes <tspan fill="#0969da">+launch </tspan><tspan fill="#1b7c83">@docs </tspan><tspan fill="#8250df">t:2026-08-10</tspan></text>
+    </g>
+
+    <!-- completed line struck through -->
+    <rect x="72" y="60" width="445" height="1.5" fill="#656d76" opacity="0.5"/>
+
+    <!-- caret + staged AI-edit comment chip on the focal line -->
+    <rect x="534" y="132" width="9" height="22" rx="2" fill="#047558" opacity="0.85"/>
+    <line x1="547" y1="148" x2="556" y2="148" stroke="#047558" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <rect x="556" y="131" width="242" height="34" rx="10" fill="#047558" opacity="0.16" filter="url(#soft)"/>
+    <rect x="556" y="131" width="242" height="34" rx="10" fill="#047558" fill-opacity="0.09"
+          stroke="#047558" stroke-opacity="0.55" stroke-width="1.25" stroke-dasharray="5 4"/>
+    <text x="572" y="153" font-size="14" fill="#047558"># split into 3 subtasks ▸</text>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+todo.txt — a KiroCrew app
+Copyright 2026 LeTeutz
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This app implements the todo.txt format specification by Gina Trapani
+(https://github.com/todotxt/todo.txt), which is published under the
+GNU General Public License v3. The specification is a data format, not
+code; no todo.txt project source is incorporated here.
+
+The frontend bundles third-party npm dependencies (CodeMirror 6 and
+others) at build time. Their licenses are declared in ui/package.json
+and reproduced in each package's own distribution.

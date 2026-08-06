@@ -1,0 +1,167 @@
+# Cross-platform CI.
+#
+# WHY THIS EXISTS: v1.0.0 shipped tested on macOS only. The code was audited for
+# portability -- no macOS-only commands, no hardcoded POSIX paths, pathlib
+# throughout, the single subprocess call branches to os.startfile on Windows,
+# and CRLF is handled deliberately with a dominant-terminator strategy -- but
+# audited is not tested. This matrix is what turns that audit into a result.
+#
+# The riskiest surface for this app is line endings: it edits a plain-text file
+# in place, so a Windows user's CRLF todo.txt is the most likely way it corrupts
+# real data. `actions/checkout` does NOT convert line endings (it writes the
+# blob bytes), so the CRLF tests exercise genuine \r\n handling on every runner.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same ref makes an in-flight run irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: backend ${{ matrix.os }} py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Never cancel siblings: when a platform-specific failure appears, the
+      # whole point is to see WHICH platforms are affected, not just the first.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # 3.12 is what the KiroCrew gateway ships and what this suite is
+        # verified against, so it is the required leg. 3.13 runs as an
+        # early-warning signal and is allowed to fail -- a red 3.13 must not
+        # gate a release against a runtime no user is on.
+        python: ['3.12', '3.13']
+    continue-on-error: ${{ matrix.python == '3.13' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Pinned to the exact versions this suite is verified green against
+      # locally. An unpinned resolve makes a red run ambiguous between "our
+      # bug" and "a dependency changed today".
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "aiohttp==3.14.3" "pytest==9.1.1" "pytest-asyncio==1.4.0"
+
+      - name: Run the backend suite
+        run: python -m pytest -q
+
+  ui:
+    name: ui ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Pinned to an exact patch, not a floating '22'. The committed
+          # ui/dist is byte-compared against a fresh build below, and that
+          # comparison is only meaningful on a FIXED toolchain — bundler
+          # output is deterministic per toolchain, not across versions. A
+          # floating minor would drift the content hashes and fail the gate
+          # for a reason that has nothing to do with the change under test.
+          node-version: '22.22.2'
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      # `npm ci` (not `install`) so the lockfile is authoritative and a
+      # transitive bump cannot turn a green suite red without a commit.
+      - run: npm ci
+
+      - name: Typecheck (source)
+        run: npm run typecheck
+
+      - name: Typecheck (tests)
+        run: npm run typecheck:tests
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      # ui/dist is COMMITTED on purpose: a registry install runs no build step,
+      # so users execute the committed bundle. If a fresh build diverges from
+      # it, users are running something no CI ever tested. Checked on one
+      # runner only -- bundle hashes are deterministic per toolchain, not
+      # across OSes.
+      - name: Committed bundle matches a fresh build
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: ${{ github.workspace }}
+        run: |
+          if ! git diff --quiet -- ui/dist; then
+            echo "::error::ui/dist is stale -- rebuild and commit it."
+            git diff --stat -- ui/dist
+            exit 1
+          fi
+          echo "ui/dist reproduces byte-identically from source."
+
+  e2e:
+    # Linux only: this needs a browser download plus a live backend, and the
+    # cross-platform signal that matters (file and line-ending handling) is
+    # already covered by the backend matrix above.
+    name: end-to-end (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: python -m pip install "aiohttp==3.14.3"
+
+      - uses: actions/setup-node@v4
+        with:
+          # Pinned to an exact patch, not a floating '22'. The committed
+          # ui/dist is byte-compared against a fresh build below, and that
+          # comparison is only meaningful on a FIXED toolchain — bundler
+          # output is deterministic per toolchain, not across versions. A
+          # floating minor would drift the content hashes and fail the gate
+          # for a reason that has nothing to do with the change under test.
+          node-version: '22.22.2'
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - run: npm ci
+        working-directory: ui
+
+      - run: npx playwright install --with-deps chromium
+        working-directory: ui
+
+      # The runner boots backend/server.py itself; TODO_TXT_PYTHON selects an
+      # interpreter that has aiohttp (the default python3 on a runner does not).
+      - name: Run the e2e suite
+        working-directory: ui
+        env:
+          TODO_TXT_PYTHON: python
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: ui/test-results/
+          retention-days: 7

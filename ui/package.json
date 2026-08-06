@@ -1,0 +1,52 @@
+{
+  "name": "@kirocrew/todo-txt-ui",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "todo.txt app frontend \u2014 resilient CodeMirror editor with crash recovery and conflict-safe autosave.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node node_modules/vitest/vitest.mjs run",
+    "test:watch": "vitest",
+    "test:e2e": "node scripts/run-e2e.mjs",
+    "benchmark:editor": "node scripts/benchmark-editor.mjs",
+    "icon:png": "node scripts/render-icon-png.mjs",
+    "typecheck:tests": "tsc -p tsconfig.tests.json --noEmit",
+    "verify": "tsc --noEmit && tsc -p tsconfig.tests.json --noEmit && vitest run && vite build"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.10.4",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.6",
+    "@replit/codemirror-vim": "^6.3.0",
+    "diff": "^5.2.0",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/diff": "^7.0.2",
+    "@types/node": "22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/ui": "^2.1.9",
+    "autoprefixer": "^10.5.0",
+    "jsdom": "^29.1.1",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.6.3",
+    "vite": "^5.3.6",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
+    "vitest": "^2.1.9"
+  }
+}
