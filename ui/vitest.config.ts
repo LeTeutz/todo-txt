@@ -21,6 +21,16 @@ const UI_DIR = __dirname;
 const REPO_ROOT = resolve(UI_DIR, '..');
 const NODE_MODULES = resolve(UI_DIR, 'node_modules');
 
+// An absolute glob PATTERN must use forward slashes on every platform, which is
+// not what `resolve()` gives you: on Windows it returns
+// `D:\a\repo\tests\**\*.test.tsx`, and every glob implementation reads `\` as an
+// escape character rather than a separator. The pattern then matches nothing and
+// vitest exits 1 with "No test files found" — which reads like a missing-tests
+// bug rather than a path bug, and stayed hidden until the Windows runner got far
+// enough to reach this step. Plain paths (the aliases below, `fs.allow`) are
+// unaffected, so only the patterns are normalized.
+const globPattern = (...parts: string[]) => resolve(...parts).replace(/\\/g, '/');
+
 export default defineConfig({
   plugins: [react()],
   root: UI_DIR,
@@ -61,8 +71,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: false,
     include: [
-      resolve(REPO_ROOT, 'tests/**/*.test.{ts,tsx}'),
-      resolve(UI_DIR, 'src/**/*.test.{ts,tsx}'),
+      globPattern(REPO_ROOT, 'tests/**/*.test.{ts,tsx}'),
+      globPattern(UI_DIR, 'src/**/*.test.{ts,tsx}'),
     ],
     // Playwright e2e specs are driven by `playwright test`, not vitest.
     exclude: ['**/node_modules/**', '**/*.e2e.spec.ts'],
