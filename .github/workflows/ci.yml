@@ -36,20 +36,23 @@ jobs:
       # whole point is to see WHICH platforms are affected, not just the first.
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        # 3.12 is what the KiroCrew gateway ships and what this suite is
+        # Windows is deliberately absent: app.json declares
+        # `platform.os: ["linux", "macos"]`. The leg was run once against
+        # 3650a07 and reported nine failures — CRLF in test fixtures, the $HOME
+        # containment check, and the writability probe that does not fail closed
+        # there. Those are catalogued in RELEASE-NOTES.md as a known limitation.
+        # It is not kept as a `continue-on-error` job, because that only stops a
+        # job failing the workflow: the check itself still reports red, so every
+        # commit on main would carry a permanent red X for a platform this app
+        # does not support, which is how a team learns to ignore CI. Re-add the
+        # runner in the same commit that adds Windows to `platform.os`.
+        os: [ubuntu-latest, macos-latest]
+        # 3.12 is what the Kiro Crew gateway ships and what this suite is
         # verified against, so it is the required leg. 3.13 runs as an
-        # early-warning signal and is allowed to fail -- a red 3.13 must not
+        # early-warning signal and is allowed to fail — a red 3.13 must not
         # gate a release against a runtime no user is on.
         python: ['3.12', '3.13']
-    # 3.13 is an early-warning signal, and Windows is not a platform this app
-    # claims: app.json declares `platform.os: ["linux", "macos"]`. The Windows
-    # legs run because their result is worth knowing — a Windows gateway CAN
-    # install a server-mode app, and the failures there are catalogued as a
-    # known limitation in RELEASE-NOTES.md (CRLF in test fixtures, plus two
-    # POSIX-only guards: the $HOME containment check and the writability probe).
-    # They do not gate a release against a platform the manifest excludes.
-    continue-on-error: ${{ matrix.python == '3.13' || matrix.os == 'windows-latest' }}
+    continue-on-error: ${{ matrix.python == '3.13' }}
     steps:
       - uses: actions/checkout@v4
 

@@ -103,13 +103,13 @@ would abort an install (`set -euo pipefail`) for no user benefit.
 ## Known limitations
 
 - **Windows is not a supported platform.** `app.json` declares
-  `platform.os: ["linux", "macos"]`. CI runs the backend suite on Windows anyway,
-  because a Windows gateway can install a server-mode app, and it reports nine
-  failures there: test fixtures compare `\n` against a CRLF read, the `$HOME`
-  containment check on a configured root does not hold, and — the one that
-  matters — the writability probe passes a directory it cannot write, so the
-  "fails closed" refusal in `set-root` does not fail closed on Windows. Those
-  legs are non-gating rather than fixed. Use Linux or macOS.
+  `platform.os: ["linux", "macos"]`. The backend suite was run once on Windows to
+  find out what would break, and it reports nine failures: test fixtures compare
+  `\n` against a CRLF read, the `$HOME` containment check on a configured root
+  does not hold, and — the one that matters — the writability probe passes a
+  directory it cannot write, so the "fails closed" refusal in `set-root` does not
+  fail closed there. The runner is not in CI, because a permanently red check for
+  an unsupported platform teaches you to ignore CI. Use Linux or macOS.
 
 - **Vim `Ctrl+D`/`Ctrl+U` scroll the editor**, so the app's plain `Ctrl+D`
   mark-done is unavailable while VIM mode is on. Use `\x`, or `Ctrl+Shift+D`
