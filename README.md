@@ -69,6 +69,12 @@ The editor follows the [Gina Trapani todo.txt specification](https://github.com/
 - `key:value` metadata extensions such as `due:2026-07-27`
 - `x YYYY-MM-DD` completion prefix
 
+The upstream project publishes a one-page visual cheatsheet of that grammar —
+[`description.svg`](https://github.com/todotxt/todo.txt/blob/master/description.svg) —
+which is the fastest way to see the whole format at once. It is linked rather
+than reproduced here: that repository is GPL-3.0 and this app is Apache-2.0, so
+copying or embedding the asset would mix licences for no benefit.
+
 ## Editor
 
 - CodeMirror 6 virtualized editing, real line-number gutter, wrapping, history, and visible-range todo.txt highlighting
