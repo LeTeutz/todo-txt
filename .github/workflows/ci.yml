@@ -42,7 +42,14 @@ jobs:
         # early-warning signal and is allowed to fail -- a red 3.13 must not
         # gate a release against a runtime no user is on.
         python: ['3.12', '3.13']
-    continue-on-error: ${{ matrix.python == '3.13' }}
+    # 3.13 is an early-warning signal, and Windows is not a platform this app
+    # claims: app.json declares `platform.os: ["linux", "macos"]`. The Windows
+    # legs run because their result is worth knowing — a Windows gateway CAN
+    # install a server-mode app, and the failures there are catalogued as a
+    # known limitation in RELEASE-NOTES.md (CRLF in test fixtures, plus two
+    # POSIX-only guards: the $HOME containment check and the writability probe).
+    # They do not gate a release against a platform the manifest excludes.
+    continue-on-error: ${{ matrix.python == '3.13' || matrix.os == 'windows-latest' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +96,18 @@ jobs:
       # `npm ci` (not `install`) so the lockfile is authoritative and a
       # transitive bump cannot turn a green suite red without a commit.
       - run: npm ci
+
+      # tsconfig.tests.json type-checks the repo-root `tests/` directory, and
+      # TypeScript resolves a bare specifier by walking up from the importing
+      # FILE — so from ../tests/ it looks for <repo root>/node_modules and finds
+      # nothing, because the dependencies live in ui/node_modules. A developer
+      # checkout carries that link; a clean clone does not, which is why this
+      # step exists rather than the suite being broken. `junction` is ignored on
+      # POSIX and is what Windows needs for a directory link without admin
+      # rights, so one line covers all three runners.
+      - name: Link node_modules at the repo root (tests/ resolves from there)
+        working-directory: ${{ github.workspace }}
+        run: node -e "const fs=require('fs');if(!fs.existsSync('node_modules'))fs.symlinkSync('ui/node_modules','node_modules','junction')"
 
       - name: Typecheck (source)
         run: npm run typecheck

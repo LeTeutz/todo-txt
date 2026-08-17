@@ -34,5 +34,17 @@
   "include": ["src", "../tests"],
   // Everything under tests/ is checked, e2e specs included — they are the
   // files most likely to drift, since vitest never even loads them.
+  //
+  // RESOLUTION NOTE: `include` deliberately reaches outside this directory,
+  // into the repo-root `tests/`. TypeScript resolves a bare specifier by
+  // walking up from the importing FILE, so `import { test } from 'vitest'`
+  // inside ../tests/foo.ts looks for `<repo root>/node_modules`, not
+  // `ui/node_modules`. A repo-root `node_modules` symlink is therefore part of
+  // the working setup, not an accident — `npm run typecheck:tests` fails with a
+  // cascade of TS2307 without it. CI creates that link explicitly (see
+  // .github/workflows/ci.yml). Pinning `paths` and `typeRoots` here was tried
+  // and rejected: it fixes module resolution but then `types:
+  // ["vitest/globals"]` no longer resolves, because setting `typeRoots`
+  // replaces the default lookup rather than adding to it.
   "exclude": []
 }
